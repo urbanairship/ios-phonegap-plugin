@@ -33,6 +33,8 @@
 		1F88BF5B13E38E900020F59A /* Capture.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 1F88BF5A13E38E900020F59A /* Capture.bundle */; };
 		1F88BF5D13E38E900020F59A /* PhoneGap.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1F88BF5C13E38E900020F59A /* PhoneGap.plist */; };
 		1F88BF6113E38E900020F59A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F88BF6013E38E900020F59A /* AppDelegate.m */; };
+		1F88BF6A13E38EC00020F59A /* www in Resources */ = {isa = PBXBuildFile; fileRef = 1F88BF6913E38EC00020F59A /* www */; };
+		1FE49EA213E4783100991DEC /* PushNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FE49EA113E4783100991DEC /* PushNotification.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,10 +52,10 @@
 		1F88BF3413E38E900020F59A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		1F88BF3613E38E900020F59A /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		1F88BF3813E38E900020F59A /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
-		1F88BF3C13E38E900020F59A /* UAPhoneGap-Info.plist */ = {isa = PBXFileReference; path = "UAPhoneGap-Info.plist"; sourceTree = "<group>"; };
+		1F88BF3C13E38E900020F59A /* UAPhoneGap-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "UAPhoneGap-Info.plist"; sourceTree = "<group>"; };
 		1F88BF3E13E38E900020F59A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1F88BF4013E38E900020F59A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		1F88BF4213E38E900020F59A /* UAPhoneGap-Prefix.pch */ = {isa = PBXFileReference; path = "UAPhoneGap-Prefix.pch"; sourceTree = "<group>"; };
+		1F88BF4213E38E900020F59A /* UAPhoneGap-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UAPhoneGap-Prefix.pch"; sourceTree = "<group>"; };
 		1F88BF4313E38E900020F59A /* PhoneGap.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhoneGap.framework; path = /Users/Shared/PhoneGap/Frameworks/PhoneGap.framework; sourceTree = "<absolute>"; };
 		1F88BF4813E38E900020F59A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Resources/en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1F88BF4C13E38E900020F59A /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = Resources/es.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -64,9 +66,12 @@
 		1F88BF5813E38E900020F59A /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default@2x.png"; path = "Resources/splash/Default@2x.png"; sourceTree = "<group>"; };
 		1F88BF5A13E38E900020F59A /* Capture.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Capture.bundle; path = Resources/Capture.bundle; sourceTree = "<group>"; };
 		1F88BF5C13E38E900020F59A /* PhoneGap.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PhoneGap.plist; sourceTree = "<group>"; };
-		1F88BF5F13E38E900020F59A /* AppDelegate.h */ = {isa = PBXFileReference; name = AppDelegate.h; path = Classes/AppDelegate.h; sourceTree = "<group>"; };
+		1F88BF5F13E38E900020F59A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Classes/AppDelegate.h; sourceTree = "<group>"; };
 		1F88BF6013E38E900020F59A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Classes/AppDelegate.m; sourceTree = "<group>"; };
-		1F88BF6313E38E900020F59A /* README */ = {isa = PBXFileReference; name = README; path = Plugins/README; sourceTree = "<group>"; };
+		1F88BF6313E38E900020F59A /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = Plugins/README; sourceTree = "<group>"; };
+		1F88BF6913E38EC00020F59A /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; path = www; sourceTree = "<group>"; };
+		1FE49EA013E4783100991DEC /* PushNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PushNotification.h; path = Plugins/PushNotification.h; sourceTree = "<group>"; };
+		1FE49EA113E4783100991DEC /* PushNotification.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PushNotification.m; path = Plugins/PushNotification.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +109,7 @@
 		1F88BF0E13E38E900020F59A = {
 			isa = PBXGroup;
 			children = (
+				1F88BF6913E38EC00020F59A /* www */,
 				1F88BF3A13E38E900020F59A /* UAPhoneGap */,
 				1F88BF1F13E38E900020F59A /* Frameworks */,
 				1F88BF1D13E38E900020F59A /* Products */,
@@ -221,6 +227,8 @@
 		1F88BF6213E38E900020F59A /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				1FE49EA013E4783100991DEC /* PushNotification.h */,
+				1FE49EA113E4783100991DEC /* PushNotification.m */,
 				1F88BF6313E38E900020F59A /* README */,
 			);
 			name = Plugins;
@@ -254,6 +262,9 @@
 /* Begin PBXProject section */
 		1F88BF1013E38E900020F59A /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = 1F88BF1313E38E900020F59A /* Build configuration list for PBXProject "UAPhoneGap" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -287,6 +298,7 @@
 				1F88BF5913E38E900020F59A /* Default@2x.png in Resources */,
 				1F88BF5B13E38E900020F59A /* Capture.bundle in Resources */,
 				1F88BF5D13E38E900020F59A /* PhoneGap.plist in Resources */,
+				1F88BF6A13E38EC00020F59A /* www in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +327,7 @@
 			files = (
 				1F88BF4113E38E900020F59A /* main.m in Sources */,
 				1F88BF6113E38E900020F59A /* AppDelegate.m in Sources */,
+				1FE49EA213E4783100991DEC /* PushNotification.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +373,8 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -376,6 +390,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.1;
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -385,7 +400,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -451,6 +466,7 @@
 				1F88BF6813E38E900020F59A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

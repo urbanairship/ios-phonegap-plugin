@@ -44,6 +44,8 @@
 		<string>PGCapture</string>
 		<key>com.phonegap.splashscreen</key>
 		<string>PGSplashScreen</string>
+		<key>pushnotification</key>
+		<string>PushNotification</string>
 	</dict>
 </dict>
 </plist>

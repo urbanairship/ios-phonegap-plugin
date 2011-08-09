@@ -13,9 +13,16 @@
 	#import "PhoneGapViewController.h"
 #endif
 
+#import "PushNotification.h"
+
+#define UA_HOST @"https://go.urbanairship.com/"
+#define UA_KEY @"Your App Key"
+#define UA_SECRET @"Your App Secret"
+
 @implementation AppDelegate
 
 @synthesize invokeString;
+@synthesize launchNotification;
 
 - (id) init
 {	
@@ -30,16 +37,23 @@
  */
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	
-	NSArray *keyArray = [launchOptions allKeys];
-	if ([launchOptions objectForKey:[keyArray objectAtIndex:0]]!=nil) 
-	{
-		NSURL *url = [launchOptions objectForKey:[keyArray objectAtIndex:0]];
-		self.invokeString = [url absoluteString];
-		NSLog(@"UAPhoneGap launchOptions = %@",url);
-	}
-	
-	return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    
+// ******** NOTE: removed the following block from the default app delegate as it's assuming
+// your app will never receive push notifications
+ 
+//	NSArray *keyArray = [launchOptions allKeys];
+//	if ([launchOptions objectForKey:[keyArray objectAtIndex:0]]!=nil) 
+//	{
+//		NSURL *url = [launchOptions objectForKey:[keyArray objectAtIndex:0]];
+//		self.invokeString = [url absoluteString];
+//	}
+    
+    // cache notification, if any, until webview finished loading, then process it if needed
+    // assume will not receive another message before webview loaded
+    self.launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    application.applicationIconBadgeNumber = 0;
+    
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
 // this happens while we are running ( in the background, or from within our own app )
@@ -71,6 +85,15 @@
 		NSString* jsString = [NSString stringWithFormat:@"var invokeString = \"%@\";", self.invokeString];
 		[theWebView stringByEvaluatingJavaScriptFromString:jsString];
 	}
+    
+    //Now that the web view has loaded, pass on the notfication
+    if (launchNotification) {
+        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
+        
+        //NOTE: this drops payloads outside of the "aps" key
+        pushHandler.notificationMessage = [launchNotification objectForKey:@"aps"];
+    }
+    
 	return [ super webViewDidFinishLoad:theWebView ];
 }
 
@@ -101,12 +124,53 @@
 
 - (BOOL) execute:(InvokedUrlCommand*)command
 {
-	return [ super execute:command];
+	return [super execute:command];
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
+    [pushHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken host:UA_HOST appKey:UA_KEY appSecret:UA_SECRET];
+}
+
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
+    [pushHandler didFailToRegisterForRemoteNotificationsWithError:error];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    NSLog(@"didReceiveNotification");
+    
+    // NOTE this is a 4.x only block -- TODO: add 3.x compatibility
+    if (application.applicationState == UIApplicationStateActive) {
+        NSLog(@"active");
+        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
+        pushHandler.notificationMessage = [userInfo objectForKey:@"aps"];
+        [pushHandler notificationReceived];
+    } else {
+        NSLog(@"other");
+        self.launchNotification = userInfo;//[userInfo objectForKey:@"aps"];
+    }
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    
+    NSLog(@"active");
+
+    if (![self.webView isLoading] && self.launchNotification) {
+        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
+        pushHandler.notificationMessage = [self.launchNotification objectForKey:@"aps"];
+        //[pushHandler notificationReceived];
+        
+        [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
+    }
+    
+    [super applicationDidBecomeActive:application];
 }
 
 - (void)dealloc
 {
-	[ super dealloc ];
+    launchNotification = nil;
+	[super dealloc];
 }
 
 @end
