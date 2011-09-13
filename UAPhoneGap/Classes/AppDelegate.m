@@ -68,7 +68,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
-    // ******** NOTE: modified the following block from the default app delegate as it's assuming
+    // ******** NOTE: modified the following block from the default app delegate as it assumes
     // your app will never receive push notifications
 
     //	NSArray *keyArray = [launchOptions allKeys];
@@ -153,7 +153,7 @@
 }
 
 
-- (BOOL) execute:(InvokedUrlCommand*)command
+- (BOOL)execute:(InvokedUrlCommand*)command
 {
 	return [super execute:command];
 }
@@ -191,11 +191,15 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     
     NSLog(@"active");
+    
+    //zero badge
+    application.applicationIconBadgeNumber = 0;
 
     if (![self.webView isLoading] && self.launchNotification) {
         PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
         pushHandler.notificationMessage = [self.launchNotification objectForKey:@"aps"];
-        //[pushHandler notificationReceived];
+        
+        self.launchNotification = nil;
         
         [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
     }
