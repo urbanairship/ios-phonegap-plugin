@@ -1,0 +1,8 @@
+Using the Urban Airship Plugin Sample for PhoneGap 1.0.0
+-------------------------------------------------------- 
+ 1) Fill in your app key and secret in AppDelegate.m
+ 2) Include PushNotification.js in your WWW folder (check the comments for usage)
+ 3) Add PushNotification.h/m in the Plugins folder
+ 4) Add key "pushnotification" and value "PushNotification" (case-sensitive) to the plugins
+    list in PhoneGap.plist
+ 5) Include the sample index.html or just use the parts you want
