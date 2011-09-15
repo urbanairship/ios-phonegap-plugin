@@ -1,7 +1,8 @@
 Using the Urban Airship Plugin Sample for PhoneGap 1.0.0
 -------------------------------------------------------- 
  1) Fill in your app key and secret in AppDelegate.m
- 2) Run it!
+ 2) Update the project with your bundle ID and signing settings
+ 3) Run it!
 
 Integrating the Urban Airship Plugin into Your App
 --------------------------------------------------
