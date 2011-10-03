@@ -1,16 +1,16 @@
 /*
  Copyright 2009-2011 Urban Airship Inc. All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
  1. Redistributions of source code must retain the above copyright notice, this
  list of conditions and the following disclaimer.
- 
+
  2. Redistributions in binaryform must reproduce the above copyright notice,
  this list of conditions and the following disclaimer in the documentation
  and/or other materials provided withthe distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE URBAN AIRSHIP INC``AS IS'' AND ANY EXPRESS OR
  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -39,27 +39,27 @@
     [notificationMessage release];
     [registerSuccessCallback release];
     [registerErrorCallback release];
-    
+
     self.notificationCallbackId = nil;
-    
+
     [super dealloc];
 }
 
-- (void)registerAPN:(NSMutableArray *)arguments 
+- (void)registerAPN:(NSMutableArray *)arguments
            withDict:(NSMutableDictionary *)options {
     //NSLog(@"registerAPN:%@\n withDict:%@", [arguments description], [options description]);
-    
+
     NSUInteger argc = [arguments count];
     if (argc > 0 && [[arguments objectAtIndex:0] length] > 0) {
         NSLog(@"Register success callback set");
         //self.registerSuccessCallback = [arguments objectAtIndex:0];
         self.callbackId = [arguments objectAtIndex:0];
     }
-    
+
     if (argc > 1 && [[arguments objectAtIndex:1] length] > 0) {
         self.registerErrorCallback = [arguments objectAtIndex:1];
     }
-    
+
     UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeNone;
     if ([options objectForKey:@"badge"]) {
         notificationTypes |= UIRemoteNotificationTypeBadge;
@@ -70,27 +70,27 @@
     if ([options objectForKey:@"alert"]) {
         notificationTypes |= UIRemoteNotificationTypeAlert;
     }
-    
+
     if (notificationTypes == UIRemoteNotificationTypeNone)
         NSLog(@"PushNotification.registerAPN: Push notification type is set to none");
-    
+
     [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
 
 }
 
 - (void)startNotify:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
     NSLog(@"startNotify");
-    
+
     ready = YES;
-    
+
 //    NSUInteger argc = [arguments count];
 //    if (argc > 0 && [[arguments objectAtIndex:0] length] > 0) {
 //        NSLog(@"Register success callback set");
 //        //self.registerSuccessCallback = [arguments objectAtIndex:0];
 //        self.notificationCallbackId = [arguments objectAtIndex:0];
 //    }
-    
-    
+
+
     // Check if there is cached notification before JS PushNotification messageCallback is set
     if (notificationMessage) {
         [self notificationReceived];
@@ -111,18 +111,18 @@
                                                     host:(NSString *)host
                                                   appKey:(NSString *)appKey
                                                appSecret:(NSString *)appSecret {
-    NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<"withString:@""] 
-                        stringByReplacingOccurrencesOfString:@">" withString:@""] 
+    NSString *token = [[[[deviceToken description] stringByReplacingOccurrencesOfString:@"<"withString:@""]
+                        stringByReplacingOccurrencesOfString:@">" withString:@""]
                        stringByReplacingOccurrencesOfString: @" " withString: @""];
-    
+
     NSLog(@"didRegisterForRemoteNotificationsWithDeviceToken:%@", token);
-    
+
     NSMutableDictionary *results = [NSMutableDictionary dictionary];
     [results setValue:token forKey:@"deviceToken"];
     [results setValue:host forKey:@"host"];
     [results setValue:appKey forKey:@"appKey"];
     [results setValue:appSecret forKey:@"appSecret"];
-    
+
     PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:results];
     [self writeJavascript:[pluginResult toSuccessCallbackString:self.callbackId]];
 
@@ -130,7 +130,7 @@
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
     NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@", error);
-    
+
     if (registerErrorCallback) {
         NSString *jsStatement = [NSString stringWithFormat:@"%@({error:'%@'});",
                                  registerErrorCallback, error];
@@ -142,11 +142,13 @@
     NSLog(@"Notification received");
     NSLog(@"Ready: %d",ready);
     NSLog(@"Msg: %@", [notificationMessage descriptionWithLocale:[NSLocale currentLocale] indent:4]);
-    
+
     if (ready && notificationMessage) {
         NSMutableString *jsonStr = [NSMutableString stringWithString:@"{"];
         if ([notificationMessage objectForKey:@"alert"]) {
-            [jsonStr appendFormat:@"alert:'%@',", [notificationMessage objectForKey:@"alert"]];
+            [jsonStr appendFormat:@"alert:'%@',", [[notificationMessage objectForKey:@"alert"]
+                                                      stringByReplacingOccurrencesOfString:@"'"
+                                                                                withString:@"\\'"]];
         }
         if ([notificationMessage objectForKey:@"badge"]) {
             [jsonStr appendFormat:@"badge:%d,", [[notificationMessage objectForKey:@"badge"] intValue]];
@@ -155,14 +157,14 @@
             [jsonStr appendFormat:@"sound:'%@',", [notificationMessage objectForKey:@"sound"]];
         }
         [jsonStr appendString:@"}"];
-        
+
         NSString *jsStatement = [NSString stringWithFormat:@"window.plugins.pushNotification.notificationCallback(%@);", jsonStr];
         [self writeJavascript:jsStatement];
         NSLog(@"run JS: %@", jsStatement);
-        
+
 //        PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:notificationMessage];
 //        [self writeJavascript:[pluginResult toSuccessCallbackString:self.]];
-//        
+//
         self.notificationMessage = nil;
     }
 }
