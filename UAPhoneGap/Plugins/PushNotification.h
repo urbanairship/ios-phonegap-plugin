@@ -24,9 +24,9 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <PhoneGap/PGPlugin.h>
+#import <Cordova/CDVPlugin.h>
 
-@interface PushNotification : PGPlugin {
+@interface PushNotification : CDVPlugin {
     
     
     NSString *registerSuccessCallback;
@@ -44,7 +44,6 @@
 
 @property (nonatomic, retain) NSDictionary *notificationMessage;
 @property (nonatomic, retain) NSString *registerSuccessCallback;
-@property (nonatomic, retain) NSString *registerErrorCallback;
 
 - (void)registerAPN:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)startNotify:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;

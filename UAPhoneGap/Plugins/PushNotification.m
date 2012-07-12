@@ -29,7 +29,6 @@
 
 @synthesize notificationMessage;
 @synthesize registerSuccessCallback;
-@synthesize registerErrorCallback;
 
 //pg
 @synthesize callbackId;
@@ -38,7 +37,6 @@
 - (void)dealloc {
     [notificationMessage release];
     [registerSuccessCallback release];
-    [registerErrorCallback release];
 
     self.notificationCallbackId = nil;
 
@@ -49,16 +47,7 @@
            withDict:(NSMutableDictionary *)options {
     //NSLog(@"registerAPN:%@\n withDict:%@", [arguments description], [options description]);
 
-    NSUInteger argc = [arguments count];
-    if (argc > 0 && [[arguments objectAtIndex:0] length] > 0) {
-        NSLog(@"Register success callback set");
-        //self.registerSuccessCallback = [arguments objectAtIndex:0];
-        self.callbackId = [arguments objectAtIndex:0];
-    }
-
-    if (argc > 1 && [[arguments objectAtIndex:1] length] > 0) {
-        self.registerErrorCallback = [arguments objectAtIndex:1];
-    }
+    self.callbackId = [arguments pop];
 
     UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeNone;
     if ([options objectForKey:@"badge"]) {
@@ -82,14 +71,6 @@
     NSLog(@"startNotify");
 
     ready = YES;
-
-//    NSUInteger argc = [arguments count];
-//    if (argc > 0 && [[arguments objectAtIndex:0] length] > 0) {
-//        NSLog(@"Register success callback set");
-//        //self.registerSuccessCallback = [arguments objectAtIndex:0];
-//        self.notificationCallbackId = [arguments objectAtIndex:0];
-//    }
-
 
     // Check if there is cached notification before JS PushNotification messageCallback is set
     if (notificationMessage) {
@@ -123,7 +104,7 @@
     [results setValue:appKey forKey:@"appKey"];
     [results setValue:appSecret forKey:@"appSecret"];
 
-    PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:results];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:results];
     [self writeJavascript:[pluginResult toSuccessCallbackString:self.callbackId]];
 
 }
@@ -131,11 +112,11 @@
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
     NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@", error);
 
-    if (registerErrorCallback) {
-        NSString *jsStatement = [NSString stringWithFormat:@"%@({error:'%@'});",
-                                 registerErrorCallback, error];
-        [super writeJavascript:jsStatement];
-    }
+    NSMutableDictionary *results = [NSMutableDictionary dictionary];
+    [results setValue:[error description] forKey:@"error"];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:results];
+    [self writeJavascript: [pluginResult toErrorCallbackString:self.callbackId]];
 }
 
 - (void)notificationReceived {
@@ -162,9 +143,6 @@
         [self writeJavascript:jsStatement];
         NSLog(@"run JS: %@", jsStatement);
 
-//        PluginResult* pluginResult = [PluginResult resultWithStatus:PGCommandStatus_OK messageAsDictionary:notificationMessage];
-//        [self writeJavascript:[pluginResult toSuccessCallbackString:self.]];
-//
         self.notificationMessage = nil;
     }
 }
