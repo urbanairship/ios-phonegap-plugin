@@ -24,8 +24,7 @@ PushNotification.prototype.log = function(message) {
     cordovaRef.exec(null, null, "PushNotification", "log", [{"msg":message,}]);
 };
 
-
-PhoneGap.addConstructor(function() 
+cordovaRef.addConstructor(function() 
 {
 	if(!window.plugins)
 	{
