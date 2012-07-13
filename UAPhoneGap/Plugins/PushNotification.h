@@ -27,28 +27,24 @@
 #import <Cordova/CDVPlugin.h>
 
 @interface PushNotification : CDVPlugin {
-    
-    
-    NSString *registerSuccessCallback;
-    NSString *registerErrorCallback;
+
     NSDictionary *notificationMessage;
-    
+
     NSString *notificationCallbackId;
-    
+    NSString *registerCallbackId;
+
     BOOL ready;
 }
 
-//pg
-@property (nonatomic, copy) NSString *callbackId;
-@property (nonatomic, copy) NSString *notificationCallbackId;
-
 @property (nonatomic, retain) NSDictionary *notificationMessage;
-@property (nonatomic, retain) NSString *registerSuccessCallback;
+
+//pg
+@property (nonatomic, copy) NSString *notificationCallbackId;
+@property (nonatomic, copy) NSString *registerCallbackId;
 
 - (void)registerAPN:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)startNotify:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)log:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
-
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
                                                     host:(NSString *)host

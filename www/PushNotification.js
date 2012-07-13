@@ -16,7 +16,7 @@ PushNotification.prototype.register = function(success, fail, options) {
 
 // call this to notify the plugin that the device is ready
 PushNotification.prototype.startNotify = function(notificationCallback) {
-    cordovaRef.exec(null, null, "PushNotification", "startNotify", []/* BUG - dies on null */);
+    cordovaRef.exec(notificationCallback, null, "PushNotification", "startNotify", []/* BUG - dies on null */);
 };
 
 // use this to log from JS to the Xcode console - useful!

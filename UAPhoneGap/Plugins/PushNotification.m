@@ -28,26 +28,23 @@
 @implementation PushNotification
 
 @synthesize notificationMessage;
-@synthesize registerSuccessCallback;
 
-//pg
-@synthesize callbackId;
 @synthesize notificationCallbackId;
+@synthesize registerCallbackId;
 
 - (void)dealloc {
     [notificationMessage release];
-    [registerSuccessCallback release];
 
-    self.notificationCallbackId = nil;
+    [registerCallbackId release];
+    [notificationCallbackId release];
 
     [super dealloc];
 }
 
-- (void)registerAPN:(NSMutableArray *)arguments
-           withDict:(NSMutableDictionary *)options {
+- (void)registerAPN:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
     //NSLog(@"registerAPN:%@\n withDict:%@", [arguments description], [options description]);
 
-    self.callbackId = [arguments pop];
+    self.registerCallbackId = [arguments pop];
 
     UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeNone;
     if ([options objectForKey:@"badge"]) {
@@ -64,12 +61,13 @@
         NSLog(@"PushNotification.registerAPN: Push notification type is set to none");
 
     [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
-
 }
 
 - (void)startNotify:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options {
+    //NSLog(@"startNotify:%@\n withDict:%@", [arguments description], [options description]);
     NSLog(@"startNotify");
 
+    self.notificationCallbackId = [arguments pop];
     ready = YES;
 
     // Check if there is cached notification before JS PushNotification messageCallback is set
@@ -105,18 +103,17 @@
     [results setValue:appSecret forKey:@"appSecret"];
 
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:results];
-    [self writeJavascript:[pluginResult toSuccessCallbackString:self.callbackId]];
-
+    [self writeJavascript:[pluginResult toSuccessCallbackString:self.registerCallbackId]];
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
     NSLog(@"didFailToRegisterForRemoteNotificationsWithError:%@", error);
 
     NSMutableDictionary *results = [NSMutableDictionary dictionary];
-    [results setValue:[error description] forKey:@"error"];
-    
+    [results setValue:[error localizedDescription] forKey:@"error"];
+
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:results];
-    [self writeJavascript: [pluginResult toErrorCallbackString:self.callbackId]];
+    [self writeJavascript: [pluginResult toErrorCallbackString:self.registerCallbackId]];
 }
 
 - (void)notificationReceived {
@@ -125,23 +122,21 @@
     NSLog(@"Msg: %@", [notificationMessage descriptionWithLocale:[NSLocale currentLocale] indent:4]);
 
     if (ready && notificationMessage) {
-        NSMutableString *jsonStr = [NSMutableString stringWithString:@"{"];
+        NSMutableDictionary *results = [NSMutableDictionary dictionary];
+
         if ([notificationMessage objectForKey:@"alert"]) {
-            [jsonStr appendFormat:@"alert:'%@',", [[notificationMessage objectForKey:@"alert"]
-                                                      stringByReplacingOccurrencesOfString:@"'"
-                                                                                withString:@"\\'"]];
+            [results setValue:[notificationMessage objectForKey:@"alert"] forKey:@"alert"];
         }
         if ([notificationMessage objectForKey:@"badge"]) {
-            [jsonStr appendFormat:@"badge:%d,", [[notificationMessage objectForKey:@"badge"] intValue]];
+            [results setValue:[notificationMessage objectForKey:@"badge"] forKey:@"badge"];
         }
         if ([notificationMessage objectForKey:@"sound"]) {
-            [jsonStr appendFormat:@"sound:'%@',", [notificationMessage objectForKey:@"sound"]];
+            [results setValue:[notificationMessage objectForKey:@"sound"] forKey:@"sound"];
         }
-        [jsonStr appendString:@"}"];
 
-        NSString *jsStatement = [NSString stringWithFormat:@"window.plugins.pushNotification.notificationCallback(%@);", jsonStr];
-        [self writeJavascript:jsStatement];
-        NSLog(@"run JS: %@", jsStatement);
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:results];
+        [pluginResult setKeepCallbackAsBool:YES];
+        [self writeJavascript:[pluginResult toSuccessCallbackString:self.notificationCallbackId]];
 
         self.notificationMessage = nil;
     }
