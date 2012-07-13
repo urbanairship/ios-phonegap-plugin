@@ -12,7 +12,7 @@
     <link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />        
     <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />        
     -->
-    <script type="text/javascript" charset="utf-8" src="phonegap-1.0.0.js"></script>
+    <script type="text/javascript" charset="utf-8" src="cordova-1.6.1.js"></script>
     <script type="text/javascript" charset="utf-8" src="PushNotification.js"></script>
     <script type="text/javascript" charset="utf-8">
 
@@ -32,9 +32,8 @@
     function onDeviceReady() {
         // IMPORTANT: must start notify after device is ready,
         // otherwise you will not be able to receive the launching notification in callback
-        //PushNotification.startNotify();
         window.plugins.pushNotification.log("onDeviceReady called");
-        window.plugins.pushNotification.startNotify();
+        window.plugins.pushNotification.startNotify(notificationCallback);
     }
 
     /**
@@ -42,7 +41,7 @@
      */
     
     // Customized callback for receiving notification
-    PushNotification.prototype.notificationCallback = function (notification) {
+    function notificationCallback(notification) {
         window.plugins.pushNotification.log("Received a notification.");
         var msg = '';
         for (var property in notification) {
@@ -50,8 +49,7 @@
         }
         message.innerHTML='notification received:<br><br>' + msg;
         
-        alert(notification['alert']);
-        
+        alert(notification['alert']);      
     };
 
     // when APN register succeeded
@@ -62,23 +60,18 @@
     
     // when APN register failed
     function errorCallback(e) {
-        result.innerHTML='Error during registration: '+e.error;
+        result.innerHTML='Error during registration: ' + e.error;
         registerButton.disabled=false;
     }
 
     // register button action
     function registerAPN() {
-        
         window.plugins.pushNotification.log("Registering with APNS via the App Delegate");
 
-        
         registerButton.disabled=true;
         result.innerHTML='Registering...';
-        
-        window.plugins.pushNotification.register(successCallback, errorCallback, [{ alert:true, badge:true, sound:true }]);
 
-        //or unregister
-        //navigator.pushNotification.register();
+        window.plugins.pushNotification.register(successCallback, errorCallback, [{ alert:true, badge:true, sound:true }]);
     }
     
     // register urban airship push service after APN is registered successfully
@@ -92,7 +85,7 @@
         var request = new XMLHttpRequest();
         
         // open the client and encode our URL
-        request.open('PUT', host+'api/device_tokens/'+deviceToken, true, appKey, appSecret);
+        request.open('PUT', host + 'api/device_tokens/' + deviceToken, true, appKey, appSecret);
         
         // callback when request finished
         request.onload = function() {
@@ -103,7 +96,7 @@
                 result.innerHTML = result.innerHTML + 'UA push service successfully registered.';
             } else {
               // error
-                result.innerHTML = result.innerHTML + 'Error when registering UA push service.<br>error: '+this.statusText;
+                result.innerHTML = result.innerHTML + 'Error when registering UA push service.<br>error: ' + this.statusText;
             }
             
             // for demo, you can re-register again

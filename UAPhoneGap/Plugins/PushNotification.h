@@ -24,32 +24,27 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <PhoneGap/PGPlugin.h>
+#import <Cordova/CDVPlugin.h>
 
-@interface PushNotification : PGPlugin {
-    
-    
-    NSString *registerSuccessCallback;
-    NSString *registerErrorCallback;
+@interface PushNotification : CDVPlugin {
+
     NSDictionary *notificationMessage;
-    
+
     NSString *notificationCallbackId;
-    
+    NSString *registerCallbackId;
+
     BOOL ready;
 }
 
-//pg
-@property (nonatomic, copy) NSString *callbackId;
-@property (nonatomic, copy) NSString *notificationCallbackId;
-
 @property (nonatomic, retain) NSDictionary *notificationMessage;
-@property (nonatomic, retain) NSString *registerSuccessCallback;
-@property (nonatomic, retain) NSString *registerErrorCallback;
+
+//pg
+@property (nonatomic, copy) NSString *notificationCallbackId;
+@property (nonatomic, copy) NSString *registerCallbackId;
 
 - (void)registerAPN:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)startNotify:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
 - (void)log:(NSMutableArray *)arguments withDict:(NSMutableDictionary *)options;
-
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
                                                     host:(NSString *)host

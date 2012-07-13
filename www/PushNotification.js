@@ -1,3 +1,9 @@
+// ///////////////////
+(function(){
+// ///////////////////
+
+// get local ref to global PhoneGap/Cordova/cordova object for exec function
+var cordovaRef = window.PhoneGap || window.Cordova || window.cordova; // old to new fallbacks
 
 var PushNotification = function() {
 
@@ -5,21 +11,20 @@ var PushNotification = function() {
 
 // call this to register for push notifications
 PushNotification.prototype.register = function(success, fail, options) {
-    PhoneGap.exec(success, fail, "PushNotification", "registerAPN", options);
+    cordovaRef.exec(success, fail, "PushNotification", "registerAPN", options);
 };
 
 // call this to notify the plugin that the device is ready
 PushNotification.prototype.startNotify = function(notificationCallback) {
-    PhoneGap.exec(null, null, "PushNotification", "startNotify", []/* BUG - dies on null */);
+    cordovaRef.exec(notificationCallback, null, "PushNotification", "startNotify", []/* BUG - dies on null */);
 };
 
 // use this to log from JS to the Xcode console - useful!
 PushNotification.prototype.log = function(message) {
-    PhoneGap.exec(null, null, "PushNotification", "log", [{"msg":message,}]);
+    cordovaRef.exec(null, null, "PushNotification", "log", [{"msg":message,}]);
 };
 
-
-PhoneGap.addConstructor(function() 
+cordovaRef.addConstructor(function() 
 {
 	if(!window.plugins)
 	{
@@ -27,3 +32,7 @@ PhoneGap.addConstructor(function()
 	}
 	window.plugins.pushNotification = new PushNotification();
 });
+
+// ///////////////////
+})();
+// ///////////////////

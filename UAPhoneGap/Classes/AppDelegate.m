@@ -24,41 +24,31 @@
  */
 
 #import "AppDelegate.h"
-#ifdef PHONEGAP_FRAMEWORK
-	#import <PhoneGap/PhoneGapViewController.h>
+#import "MainViewController.h"
+
+#ifdef CORDOVA_FRAMEWORK
+    #import <Cordova/CDVPlugin.h>
+    #import <Cordova/CDVURLProtocol.h>
 #else
-	#import "PhoneGapViewController.h"
+    #import "CDVPlugin.h"
+    #import "CDVURLProtocol.h"
 #endif
-
-#import "PushNotification.h"
-
-
-
-/***************************************************************************************************
- * URBAN AIRSHIP INTEGRATION
- *
- * 1) Fill in your app key and secret below
- * 2) Include PushNotification.js in your WWW folder (check the comments for usage)
- * 3) Add PushNotification.h/m in the Plugins folder
- * 4) Add key "pushnotification" and value "PushNotification" (case-sensitive) to the plugins
- *    list in PhoneGap.plist
- * 5) Include the sample index.html or just the parts you want
- *
- **************************************************************************************************/
-#define UA_HOST @"https://go.urbanairship.com/"
-#define UA_KEY @"Your App Key"
-#define UA_SECRET @"Your App Secret"
 
 @implementation AppDelegate
 
-@synthesize invokeString;
-@synthesize launchNotification;
+@synthesize window;
+@synthesize viewController;
 
 - (id) init
 {	
 	/** If you need to do any extra app-specific initialization, you can do it here
 	 *  -jm
 	 **/
+    NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage]; 
+    [cookieStorage setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+    
+    [CDVURLProtocol registerURLProtocol];
+
     return [super init];
 }
 
@@ -67,125 +57,97 @@
  */
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    NSURL* url = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
+    NSString* invokeString = nil;
+    NSDictionary* launchNotification = nil;
     
+    if (url && [url isKindOfClass:[NSURL class]]) {
+        invokeString = [url absoluteString];
+		NSLog(@"UAPhoneGap launchOptions = %@", url);
+    } 
+
     // ******** NOTE: modified the following block from the default app delegate as it assumes
     // your app will never receive push notifications
 
-    //	NSArray *keyArray = [launchOptions allKeys];
-    //	if ([launchOptions objectForKey:[keyArray objectAtIndex:0]]!=nil) 
-    //	...
-    NSURL *url = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
-    self.invokeString = [url absoluteString];
-    
     // cache notification, if any, until webview finished loading, then process it if needed
     // assume will not receive another message before webview loaded
-    self.launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    launchNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
     application.applicationIconBadgeNumber = 0;
+
+    CGRect screenBounds = [[UIScreen mainScreen] bounds];
+    self.window = [[[UIWindow alloc] initWithFrame:screenBounds] autorelease];
+    self.window.autoresizesSubviews = YES;
     
-    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    CGRect viewBounds = [[UIScreen mainScreen] applicationFrame];
+    
+    self.viewController = [[[MainViewController alloc] init] autorelease];
+    self.viewController.useSplashScreen = YES;
+    self.viewController.wwwFolderName = @"www";
+    self.viewController.startPage = @"index.html";
+    self.viewController.invokeString = invokeString;
+    self.viewController.launchNotification = launchNotification;
+    self.viewController.view.frame = viewBounds;
+    
+    // check whether the current orientation is supported: if it is, keep it, rather than forcing a rotation
+    BOOL forceStartupRotation = YES;
+    UIDeviceOrientation curDevOrientation = [[UIDevice currentDevice] orientation];
+    
+    if (UIDeviceOrientationUnknown == curDevOrientation) {
+        // UIDevice isn't firing orientation notifications yet… go look at the status bar
+        curDevOrientation = (UIDeviceOrientation)[[UIApplication sharedApplication] statusBarOrientation];
+    }
+    
+    if (UIDeviceOrientationIsValidInterfaceOrientation(curDevOrientation)) {
+        for (NSNumber *orient in self.viewController.supportedOrientations) {
+            if ([orient intValue] == curDevOrientation) {
+                forceStartupRotation = NO;
+                break;
+            }
+        }
+    } 
+    
+    if (forceStartupRotation) {
+        NSLog(@"supportedOrientations: %@", self.viewController.supportedOrientations);
+        // The first item in the supportedOrientations array is the start orientation (guaranteed to be at least Portrait)
+        UIInterfaceOrientation newOrient = [[self.viewController.supportedOrientations objectAtIndex:0] intValue];
+        NSLog(@"AppDelegate forcing status bar to: %d from: %d", newOrient, curDevOrientation);
+        [[UIApplication sharedApplication] setStatusBarOrientation:newOrient];
+    }
+    
+    [self.window addSubview:self.viewController.view];
+    [self.window makeKeyAndVisible];
+    
+    return YES;
 }
 
 // this happens while we are running ( in the background, or from within our own app )
 // only valid if UAPhoneGap.plist specifies a protocol to handle
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url 
 {
-    // must call super so all plugins will get the notification, and their handlers will be called 
-	// super also calls into javascript global function 'handleOpenURL'
-    return [super application:application handleOpenURL:url];
-}
-
--(id) getCommandInstance:(NSString*)className
-{
-	/** You can catch your own commands here, if you wanted to extend the gap: protocol, or add your
-	 *  own app specific protocol to it. -jm
-	 **/
-	return [super getCommandInstance:className];
-}
-
-/**
- Called when the webview finishes loading.  This stops the activity view and closes the imageview
- */
-- (void)webViewDidFinishLoad:(UIWebView *)theWebView 
-{
-	// only valid if UAPhoneGap.plist specifies a protocol to handle
-	if (self.invokeString) {
-		// this is passed before the deviceready event is fired, so you can access it in js when you receive deviceready
-		NSString* jsString = [NSString stringWithFormat:@"var invokeString = \"%@\";", self.invokeString];
-		[theWebView stringByEvaluatingJavaScriptFromString:jsString];
-	}
-    
-    //Now that the web view has loaded, pass on the notfication
-    if (launchNotification) {
-        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
-        
-        //NOTE: this drops payloads outside of the "aps" key
-        pushHandler.notificationMessage = [launchNotification objectForKey:@"aps"];
-        
-        //clear the launchNotification
-        self.launchNotification = nil;
+    if (!url) { 
+        return NO; 
     }
     
-	return [ super webViewDidFinishLoad:theWebView ];
-}
-
-- (void)webViewDidStartLoad:(UIWebView *)theWebView 
-{
-	return [ super webViewDidStartLoad:theWebView ];
-}
-
-/**
- * Fail Loading With Error
- * Error - If the webpage failed to load display an error with the reason.
- */
-- (void)webView:(UIWebView *)theWebView didFailLoadWithError:(NSError *)error 
-{
-	return [ super webView:theWebView didFailLoadWithError:error ];
-}
-
-/**
- * Start Loading Request
- * This is where most of the magic happens... We take the request(s) and process the response.
- * From here we can re direct links and other protocalls to different internal methods.
- */
-- (BOOL)webView:(UIWebView *)theWebView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
-{
-	return [ super webView:theWebView shouldStartLoadWithRequest:request navigationType:navigationType ];
-}
-
-
-- (BOOL)execute:(InvokedUrlCommand*)command
-{
-	return [super execute:command];
+	// calls into javascript global function 'handleOpenURL'
+    NSString* jsString = [NSString stringWithFormat:@"handleOpenURL(\"%@\");", url];
+    [self.viewController.webView stringByEvaluatingJavaScriptFromString:jsString];
+    
+    // all plugins will get the notification, and their handlers will be called 
+    [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginHandleOpenURLNotification object:url]];
+    
+    return YES; 
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
-    [pushHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken host:UA_HOST appKey:UA_KEY appSecret:UA_SECRET];
+    [self.viewController application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-    PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
-    [pushHandler didFailToRegisterForRemoteNotificationsWithError:error];
+    [self.viewController application:application didFailToRegisterForRemoteNotificationsWithError:error];
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    NSLog(@"didReceiveNotification");
-    
-    // Get application state for iOS4.x+ devices, otherwise assume active
-    UIApplicationState appState = UIApplicationStateActive;
-    if ([application respondsToSelector:@selector(applicationState)]) {
-        appState = application.applicationState;
-    }
-    
-    // NOTE this is a 4.x only block -- TODO: add 3.x compatibility
-    if (appState == UIApplicationStateActive) {
-        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
-        pushHandler.notificationMessage = [userInfo objectForKey:@"aps"];
-        [pushHandler notificationReceived];
-    } else {
-        //save it for later
-        self.launchNotification = userInfo;
-    }
+    [self.viewController application:application didReceiveRemoteNotification:userInfo];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
@@ -195,22 +157,7 @@
     //zero badge
     application.applicationIconBadgeNumber = 0;
 
-    if (![self.webView isLoading] && self.launchNotification) {
-        PushNotification *pushHandler = [self getCommandInstance:@"PushNotification"];
-        pushHandler.notificationMessage = [self.launchNotification objectForKey:@"aps"];
-        
-        self.launchNotification = nil;
-        
-        [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
-    }
-    
-    [super applicationDidBecomeActive:application];
-}
-
-- (void)dealloc
-{
-    launchNotification = nil;
-	[super dealloc];
+    [self.viewController applicationDidBecomeActive:application];
 }
 
 @end
